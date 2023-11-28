@@ -130,6 +130,11 @@ void callback(char *topic, byte *payload, unsigned int length) {
 }
 
 void loop() {
+  while (WiFi.status() != WL_CONNECTED) {
+    WiFi.disconnect();
+    WiFi.reconnect();
+  }
+
   if (client.connected() && charge_state == 1) {
     // PWM
     for (int i= 0; i <= sample; i++){
@@ -159,7 +164,7 @@ void loop() {
         ledcWrite(ledChannel_A, duty);
         ledcWrite(ledChannel_B, duty);
       } if (loop_counter % 100 == 0 && i == sample / 4) {
-        int lightLevel = analogRead(A5);  // WILL BE A6 (34) and A7 (35)
+        int lightLevel = analogRead(33);  // WILL BE A6 (34) and A7 (35)
         float voltage = lightLevel * (3.3 / 4096.0) + 0.2; // offset of 0.2
         printf("> Peak:\t%f\n", voltage);
         avg_peak = (avg_peak + voltage) / 2;
