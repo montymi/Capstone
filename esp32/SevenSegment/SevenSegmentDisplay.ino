@@ -5,12 +5,12 @@ SevSeg sevseg; //Instantiate a seven segment object
 
 
 // WiFi
-const char *ssid = "iPhone";
-const char *password = "01030200";
+const char *ssid = "iPhone de Miguel (2)";
+const char *password = "agent002";
 
 // MQTT Broker
 const char *mqtt_broker = "3.85.78.31";
-const char *topic = "esp32/test";
+const char *topic = "esp32/station/1/auth";
 const char *mqtt_username = "capstone";
 const char *mqtt_password = "9973";
 const int mqtt_port = 1883;
