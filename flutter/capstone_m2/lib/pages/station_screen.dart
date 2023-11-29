@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:m2solar/models/mqtt.dart';
@@ -11,14 +12,16 @@ class StationScreen extends StatefulWidget {
   StationScreenState createState() => StationScreenState();
 }
 
-class StationScreenState extends State<StationScreen> {
+class StationScreenState extends State<StationScreen> with TickerProviderStateMixin {
   MQTTClientManager mqttClientManager = MQTTClientManager();
+  late AnimationController _timerController;
   late String topic2fa;
   late String topicChargeState;
   int? authNum = 11;
   int? twoDigitInputValue; // Store the value entered by the user
   int? portNum; // Variable to store the selected dropdown value
   bool locked = true;
+  int _countdown = 60;
 
   @override
   void initState() {
@@ -26,7 +29,25 @@ class StationScreenState extends State<StationScreen> {
     topicChargeState = 'esp32/stations/${widget.station.id}/state';
     _setupMqttClient();
     _setupUpdatesListener();
+    _timerController = AnimationController(vsync: this, duration: const Duration(seconds: 60));
+    if (locked == false) { _startTimer(); }
     super.initState();
+  }
+
+  void _startTimer() {
+    _timerController.reverse(from: _timerController.value == 0.0 ? 1.0 : _timerController.value);
+    _timerController.addListener(() {
+      setState(() {
+        _countdown = (_timerController.value * 60).ceil();        
+      });
+    });
+    _timerController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _timerController.stop();
+        mqttClientManager.publishMessage(topicChargeState, "off");
+        print("Timer off");
+      }
+    });
   }
 
   Future<void> _setupMqttClient() async {
@@ -58,35 +79,35 @@ class StationScreenState extends State<StationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("M2Solar"),
-        backgroundColor: Colors.black87,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const SizedBox(height: 10),
-              SizedBox(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/station_marker_black.png', // Replace with your actual image path
-                      height: 50, // Adjust the height as needed
-                      width: 50,
-                    ),
-                    Title(
-                      color: Colors.black, 
-                      child: Text(widget.station.name, style: const TextStyle(fontSize: 28.0, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
+    if (locked) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("M2Solar"),
+          backgroundColor: Colors.black87,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                SizedBox(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/station_marker_black.png', // Replace with your actual image path
+                        height: 50, // Adjust the height as needed
+                        width: 50,
+                      ),
+                      Title(
+                        color: Colors.black, 
+                        child: Text(widget.station.name, style: const TextStyle(fontSize: 28.0, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              if (locked) 
                 const SizedBox(height: 10),
                 SizedBox(
                   child: PortDropDownWidget(
@@ -115,26 +136,60 @@ class StationScreenState extends State<StationScreen> {
                     ),
                   ],
                 ),
-              if (locked == false)
-                const SizedBox(height: 10),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-      floatingActionButton: Align(
-        alignment: Alignment.bottomRight,
-        child: FloatingActionButton.extended(
-          backgroundColor: Colors.black87,
-          label: const Text("Submit"),
-          onPressed: () {
-            if (twoDigitInputValue != null) {
-              mqttCheck(twoDigitInputValue!);
-            }
-          },
-          icon: const Icon(Icons.send),
+        floatingActionButton: Align(
+          alignment: Alignment.bottomRight,
+          child: FloatingActionButton.extended(
+            backgroundColor: Colors.black87,
+            label: const Text("Submit"),
+            onPressed: () {
+              if (twoDigitInputValue != null) {
+                mqttCheck(twoDigitInputValue!);
+              }
+            },
+            icon: const Icon(Icons.send),
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("M2Solar"),
+          backgroundColor: Colors.black87,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
+                SizedBox(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'assets/station_marker_black.png', // Replace with your actual image path
+                        height: 50, // Adjust the height as needed
+                        width: 50,
+                      ),
+                      Title(
+                        color: Colors.black, 
+                        child: Text(widget.station.name, style: const TextStyle(fontSize: 28.0, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
+                Text('Time remaining: $_countdown sec', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
+              ]
+            )
+          )
+        )
+      );
+    }
   }
 
   void mqttCheck(int value) {
@@ -157,6 +212,7 @@ class StationScreenState extends State<StationScreen> {
   @override
   void dispose() {
     mqttClientManager.disconnect();
+    _timerController.dispose();
     super.dispose();
   }
 }
