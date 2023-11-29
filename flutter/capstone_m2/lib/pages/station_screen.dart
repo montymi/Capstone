@@ -1,17 +1,60 @@
 import 'package:flutter/material.dart';
-import '../models/station.dart';
+import 'package:mqtt_client/mqtt_client.dart';
+import 'package:m2solar/models/mqtt.dart';
+import 'package:m2solar/models/station.dart';
 
 class StationScreen extends StatefulWidget {
   final Station station;
   const StationScreen({Key? key, required this.station}) : super(key: key);
 
   @override
-  _StationScreenState createState() => _StationScreenState();
+  StationScreenState createState() => StationScreenState();
 }
 
-class _StationScreenState extends State<StationScreen> {
+class StationScreenState extends State<StationScreen> {
+  MQTTClientManager mqttClientManager = MQTTClientManager();
+  late String topic2fa;
+  late String topicChargeState;
+  int? authNum = 11;
   int? twoDigitInputValue; // Store the value entered by the user
   int? portNum; // Variable to store the selected dropdown value
+  bool locked = true;
+
+  @override
+  void initState() {
+    topic2fa = 'esp32/stations/${widget.station.id}/auth';
+    topicChargeState = 'esp32/stations/${widget.station.id}/state';
+    _setupMqttClient();
+    _setupUpdatesListener();
+    super.initState();
+  }
+
+  Future<void> _setupMqttClient() async {
+    await mqttClientManager.connect();
+    mqttClientManager.subscribe(topic2fa);
+    init2fa();
+  }
+
+  void _setupUpdatesListener() {
+    mqttClientManager.getMessagesStream()?.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
+      if (c != null && c.isNotEmpty) {
+        final recMessage = c[0].payload as MqttPublishMessage?;
+        if (recMessage != null) {
+          final payload = MqttPublishPayload.bytesToStringAsString(recMessage.payload.message);
+          final parsedPayload = int.tryParse(payload);
+          if (parsedPayload != null) {
+            setState(() {
+              authNum = parsedPayload;
+            });
+          }
+        }
+      }
+    });
+  }
+
+  void init2fa() {
+    mqttClientManager.publishMessage(topic2fa, "refresh");
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,34 +86,37 @@ class _StationScreenState extends State<StationScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 10),
-              SizedBox(
-                child: PortDropDownWidget(
-                  ports: widget.station.ports,
-                  onPortSelected: (value) {
-                    setState(() {
-                      portNum = value;
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(height: 200),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    height: 150, // Adjust the height as needed
-                    width: 250,
-                    child: TwoDigitInput(
-                      onValueChanged: (value) {
-                        setState(() {
-                          twoDigitInputValue = value;
-                        });
-                      },
-                    ),
+              if (locked) 
+                const SizedBox(height: 10),
+                SizedBox(
+                  child: PortDropDownWidget(
+                    ports: widget.station.ports,
+                    onPortSelected: (value) {
+                      setState(() {
+                        portNum = value;
+                      });
+                    },
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 200),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      height: 150, // Adjust the height as needed
+                      width: 250,
+                      child: TwoDigitInput(
+                        onValueChanged: (value) {
+                          setState(() {
+                            twoDigitInputValue = value;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              if (locked == false)
+                const SizedBox(height: 10),
             ],
           ),
         ),
@@ -82,7 +128,7 @@ class _StationScreenState extends State<StationScreen> {
           label: const Text("Submit"),
           onPressed: () {
             if (twoDigitInputValue != null) {
-              mqttPublish(twoDigitInputValue!);
+              mqttCheck(twoDigitInputValue!);
             }
           },
           icon: const Icon(Icons.send),
@@ -91,10 +137,27 @@ class _StationScreenState extends State<StationScreen> {
     );
   }
 
-  void mqttPublish(int value) {
-    // Implement your MQTT publishing logic here
-    print('Publishing value to MQTT: $value');
-    // Add your MQTT publishing code here
+  void mqttCheck(int value) {
+    if (authNum != null && value == authNum) {
+      mqttClientManager.publishMessage(topicChargeState, "on");
+      setState(() {
+        locked = false;        
+      });
+    } else { init2fa(); showIncorrectAuthSnackBar(); }
+  }
+
+  void showIncorrectAuthSnackBar() {
+    const SnackBar snackBar = SnackBar(
+      content: Text('Authentication Failed'),
+      backgroundColor: Colors.orangeAccent,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+  
+  @override
+  void dispose() {
+    mqttClientManager.disconnect();
+    super.dispose();
   }
 }
 
@@ -104,10 +167,10 @@ class TwoDigitInput extends StatefulWidget {
   const TwoDigitInput({Key? key, this.onValueChanged}) : super(key: key);
 
   @override
-  _TwoDigitInputState createState() => _TwoDigitInputState();
+  TwoDigitInputState createState() => TwoDigitInputState();
 }
 
-class _TwoDigitInputState extends State<TwoDigitInput> {
+class TwoDigitInputState extends State<TwoDigitInput> {
   TextEditingController controller = TextEditingController();
 
   @override
