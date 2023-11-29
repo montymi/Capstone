@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:slide_to_act/slide_to_act.dart';
+import 'package:circular_countdown_timer/circular_countdown_timer.dart';
 import 'package:flutter/material.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:m2solar/models/mqtt.dart';
@@ -14,14 +16,16 @@ class StationScreen extends StatefulWidget {
 
 class StationScreenState extends State<StationScreen> with TickerProviderStateMixin {
   MQTTClientManager mqttClientManager = MQTTClientManager();
-  late AnimationController _timerController;
   late String topic2fa;
   late String topicChargeState;
   int? authNum = 11;
   int? twoDigitInputValue; // Store the value entered by the user
-  int? portNum; // Variable to store the selected dropdown value
+  int? portNum = 1; // Variable to store the selected dropdown value
   bool locked = true;
-  int _countdown = 60;
+  final int _duration = 3600; //seconds
+  final CountDownController _controller = CountDownController();
+  String? chargeTime;
+  bool cancelled = false;
 
   @override
   void initState() {
@@ -29,25 +33,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
     topicChargeState = 'esp32/stations/${widget.station.id}/state';
     _setupMqttClient();
     _setupUpdatesListener();
-    _timerController = AnimationController(vsync: this, duration: const Duration(seconds: 60));
-    if (locked == false) { _startTimer(); }
     super.initState();
-  }
-
-  void _startTimer() {
-    _timerController.reverse(from: _timerController.value == 0.0 ? 1.0 : _timerController.value);
-    _timerController.addListener(() {
-      setState(() {
-        _countdown = (_timerController.value * 60).ceil();        
-      });
-    });
-    _timerController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _timerController.stop();
-        mqttClientManager.publishMessage(topicChargeState, "off");
-        print("Timer off");
-      }
-    });
   }
 
   Future<void> _setupMqttClient() async {
@@ -108,7 +94,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 50),
                 SizedBox(
                   child: PortDropDownWidget(
                     ports: widget.station.ports,
@@ -119,7 +105,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     },
                   ),
                 ),
-                const SizedBox(height: 200),
+                const SizedBox(height: 100),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -136,21 +122,27 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     ),
                   ],
                 ),
+                SizedBox(
+                  width: 350,
+                  child: SlideAction(
+                    onSubmit: () {
+                      if (twoDigitInputValue != null) {
+                        mqttCheck(twoDigitInputValue!);
+                      }
+                      return Future.value(bool);
+                    },
+                    innerColor: Colors.black87,
+                    outerColor: Colors.deepPurple,
+                    sliderButtonIcon: const Icon(
+                      Icons.lock_open_outlined,
+                      color: Colors.white,
+                    ),
+                    text: "Slide to charge",
+                    sliderRotate: false,
+                  ),
+                )
               ],
             ),
-          ),
-        ),
-        floatingActionButton: Align(
-          alignment: Alignment.bottomRight,
-          child: FloatingActionButton.extended(
-            backgroundColor: Colors.black87,
-            label: const Text("Submit"),
-            onPressed: () {
-              if (twoDigitInputValue != null) {
-                mqttCheck(twoDigitInputValue!);
-              }
-            },
-            icon: const Icon(Icons.send),
           ),
         ),
       );
@@ -183,18 +175,98 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     ],
                   ),
                 ),
-                Text('Time remaining: $_countdown sec', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
+                const SizedBox(height: 50),
+                Text('Port $portNum', style: const TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold)),
+                CircularCountDownTimer(
+                  // Countdown duration in Seconds.
+                  duration: _duration,
+                  initialDuration: 0,
+                  controller: _controller,
+                  width: MediaQuery.of(context).size.width / 2,
+                  height: MediaQuery.of(context).size.height / 2,
+                  ringColor: Colors.grey[300]!,
+                  ringGradient: null,
+                  fillColor: Colors.deepPurple,
+                  fillGradient: null,
+                  backgroundColor: Colors.black87,
+                  backgroundGradient: null,
+                  strokeWidth: 20.0,
+                  strokeCap: StrokeCap.round,
+                  textStyle: const TextStyle(
+                    fontSize: 33.0,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textFormat: CountdownTextFormat.MM_SS,
+                  isReverse: true,
+                  isReverseAnimation: true,
+                  isTimerTextShown: true,
+                  autoStart: true,
+                  onStart: () {
+                    mqttClientManager.publishMessage(topicChargeState, "on");
+                    debugPrint('Countdown Started');
+                  },
+                  onComplete: () {
+                    mqttClientManager.publishMessage(topicChargeState, "off");
+                    debugPrint('Countdown Ended');
+                  },
+                  onChange: (String timeStamp) {
+                    debugPrint('Countdown Changed $timeStamp');
+                  },
+                  timeFormatterFunction: (defaultFormatterFunction, duration) {
+                    if (duration.inMinutes == 0 || _controller.isPaused) {
+                      return "UNPLUG";
+                    } else {
+                      return Function.apply(defaultFormatterFunction, [duration]);
+                    }
+                  },
+                ),
+                SizedBox(
+                  width: 350,
+                  child: cancelled
+                    ? null 
+                    : SlideAction(
+                    onSubmit: () {
+                      _controller.pause();
+                      mqttClientManager.publishMessage(topicChargeState, "off");
+                      if (_controller.getTime() != null) {
+                        setState(() {
+                          chargeTime = _controller.getTime()!;
+                          cancelled = true;
+                          
+                        });
+                      }
+                      return Future.value(_controller.getTime());
+                    },
+                    innerColor: Colors.black87,
+                    outerColor: Colors.deepPurple,
+                    sliderButtonIcon: const Icon(
+                      Icons.lock_open_outlined,
+                      color: Colors.white,
+                    ),
+                    text: "Slide to cancel",
+                    sliderRotate: false,
+                  )
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(14.0),
+                  child: Container(
+                    height: 2.0,
+                    width: 360.0,
+                    color: Colors.black,
+                  ),
+                ),
+                if (chargeTime != null) Text('Total Charging Time: $chargeTime', style: const TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold)),
               ]
             )
           )
-        )
+        ),
       );
     }
   }
 
   void mqttCheck(int value) {
     if (authNum != null && value == authNum) {
-      mqttClientManager.publishMessage(topicChargeState, "on");
       setState(() {
         locked = false;        
       });
@@ -212,7 +284,6 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
   @override
   void dispose() {
     mqttClientManager.disconnect();
-    _timerController.dispose();
     super.dispose();
   }
 }
@@ -293,7 +364,7 @@ class PortDropDownWidgetState extends State<PortDropDownWidget> {
         widget.ports,
         (index) => DropdownMenuItem<int>(
           value: index + 1,
-          child: Text('Port ${index + 1}'),
+          child: Text('Port ${index + 1}', style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
         ),
       ),
       hint: const Text('Select a Port'),

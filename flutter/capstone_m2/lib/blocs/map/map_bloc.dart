@@ -15,11 +15,8 @@ class MapBloc extends Bloc<MapEvent, MapState> {
   MapBloc() : super(MapInitial(coordiantes: northeastern)) {
     on<GetLocation>(_loadCoordinates);
   }
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
 
   void _loadCoordinates(GetLocation event, Emitter<MapState> emit) async {
-    final GoogleMapController controller = await _controller.future;
     try {
       final LatLng location = await _initLocation();
       // await controller.animateCamera(CameraUpdate.newCameraPosition(location));
