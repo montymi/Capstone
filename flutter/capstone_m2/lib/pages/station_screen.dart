@@ -283,10 +283,10 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
   }
   
   @override
-  void dispose() async {
+  void dispose() {
     mqttClientManager.publishMessage(topicChargeState, "off");
     mqttClientManager.publishMessage(topic2fa, "clear");
-    await Future.delayed(const Duration(seconds: 1));
+    Future.delayed(const Duration(seconds: 1)); //recommend
     mqttClientManager.disconnect();
     super.dispose();
   }
