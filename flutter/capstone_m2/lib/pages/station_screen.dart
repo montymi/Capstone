@@ -147,6 +147,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
         ),
       );
     } else {
+      mqttClientManager.publishMessage(topic2fa, "clear");
       return Scaffold(
         appBar: AppBar(
           title: const Text("M2Solar"),
@@ -282,7 +283,10 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
   }
   
   @override
-  void dispose() {
+  void dispose() async {
+    mqttClientManager.publishMessage(topicChargeState, "off");
+    mqttClientManager.publishMessage(topic2fa, "clear");
+    await Future.delayed(const Duration(seconds: 1));
     mqttClientManager.disconnect();
     super.dispose();
   }
