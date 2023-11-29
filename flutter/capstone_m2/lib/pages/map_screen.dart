@@ -143,23 +143,6 @@ class MapScreenState extends State<MapScreen> {
                     ));
                 }),
           ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.all(
-                  0.0), // here to allow for movement of button
-              child: FloatingActionButton.extended(
-                  heroTag: 'user',
-                  label: const Icon(Icons.account_circle_rounded, size: 30.0),
-                  backgroundColor: Colors.transparent,
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const UserScreen()),
-                    );
-                  }),
-            )
-          ],
           backgroundColor: Colors.black87,
         ),
         body: Stack(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:m2solar/pages/station_screen.dart';
-import 'package:m2solar/pages/splash_screen.dart';
 import 'package:m2solar/models/station.dart';
 
 class StationsList extends StatelessWidget {
@@ -14,23 +13,6 @@ class StationsList extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('M2Solar'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(
-                0.0), // here to allow for movement of button
-            child: FloatingActionButton.extended(
-                heroTag: 'user',
-                label: const Icon(Icons.account_circle_rounded, size: 30.0),
-                backgroundColor: Colors.transparent,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const MyHomePage(title: "Test")),
-                  );
-                }),
-          )
-        ],
         backgroundColor: Colors.black87,
       ),
       body: ListView.builder(
