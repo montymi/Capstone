@@ -5,8 +5,10 @@ class Station {
     required this.latitude,
     required this.longitude,
     required this.ports,
+    required this.maxCharge,
   });
-
+  
+  final int maxCharge;
   final int id;
   final String name;
   final double latitude;

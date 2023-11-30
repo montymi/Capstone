@@ -77,15 +77,14 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                const SizedBox(height: 10),
                 SizedBox(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(
                         'assets/station_marker_black.png', // Replace with your actual image path
-                        height: 50, // Adjust the height as needed
-                        width: 50,
+                        height: 40, // Adjust the height as needed
+                        width: 40,
                       ),
                       Title(
                         color: Colors.black, 
@@ -94,7 +93,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     ],
                   ),
                 ),
-                const SizedBox(height: 50),
+                const Expanded(child: SizedBox(height: 50)),
                 SizedBox(
                   child: PortDropDownWidget(
                     ports: widget.station.ports,
@@ -105,13 +104,11 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     },
                   ),
                 ),
-                const SizedBox(height: 100),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      height: 150, // Adjust the height as needed
-                      width: 250,
+                const SizedBox(height: 80),
+                SizedBox(
+                  width: 260,
+                  child:
+                    Expanded(
                       child: TwoDigitInput(
                         onValueChanged: (value) {
                           setState(() {
@@ -120,10 +117,10 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                         },
                       ),
                     ),
-                  ],
                 ),
+                const Expanded(child: SizedBox(height: 80)),
                 SizedBox(
-                  width: 350,
+                  width: 320,
                   child: SlideAction(
                     onSubmit: () {
                       if (twoDigitInputValue != null) {
@@ -140,7 +137,8 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     text: "Slide to charge",
                     sliderRotate: false,
                   ),
-                )
+                ),
+                const Expanded(child: SizedBox(height: 40)),
               ],
             ),
           ),
@@ -199,8 +197,8 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     fontWeight: FontWeight.bold,
                   ),
                   textFormat: CountdownTextFormat.MM_SS,
-                  isReverse: true,
-                  isReverseAnimation: true,
+                  isReverse: false,
+                  isReverseAnimation: false,
                   isTimerTextShown: true,
                   autoStart: true,
                   onStart: () {
@@ -215,7 +213,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     debugPrint('Countdown Changed $timeStamp');
                   },
                   timeFormatterFunction: (defaultFormatterFunction, duration) {
-                    if (duration.inMinutes == 0 || _controller.isPaused) {
+                    if (duration.inMinutes == _duration || _controller.isPaused) {
                       return "UNPLUG";
                     } else {
                       return Function.apply(defaultFormatterFunction, [duration]);
@@ -249,7 +247,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     sliderRotate: false,
                   )
                 ),
-                Padding(
+                if (chargeTime != null) Padding(
                   padding: const EdgeInsets.all(14.0),
                   child: Container(
                     height: 2.0,
@@ -311,12 +309,13 @@ class TwoDigitInputState extends State<TwoDigitInput> {
       keyboardType: TextInputType.number,
       enableSuggestions: false,
       autocorrect: false,
-      autofocus: true,
+      autofocus: false,
       maxLength: 2,
       onChanged: (value) {
         if (widget.onValueChanged != null) {
           widget.onValueChanged!(int.tryParse(value) ?? 0);
         }
+        if (value.length == 2) { FocusScope.of(context).unfocus(); }
       },
       style: const TextStyle(
         color: Colors.black87,

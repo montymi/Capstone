@@ -4,7 +4,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:m2solar/pages/list_stations_screen.dart';
 import 'package:m2solar/models/station.dart';
-import 'package:m2solar/pages/user_screen.dart';
 import 'package:m2solar/pages/station_screen.dart';
 
 
@@ -31,7 +30,7 @@ class MapScreenState extends State<MapScreen> {
   void initState() {
     _initStations();
     super.initState();
-    // _getLocation(); uncomment to auto load in current location
+    _getLocation();
   }
 
   void _initStations() {
@@ -40,22 +39,25 @@ class MapScreenState extends State<MapScreen> {
         name: 'Richards Station',
         latitude: 42.3404,
         longitude: -71.0888,
-        ports: 2);
+        ports: 2,
+        maxCharge: 60);
     westvillage = const Station(
         id: 2,
         name: 'West Village',
         latitude: 42.337384,
         longitude: -71.092649,
-        ports: 3);
+        ports: 3,
+        maxCharge: 60);
     curry = const Station(
         id: 3,
         name: 'Curry Center',
         latitude: 42.339172,
         longitude: -71.088044,
-        ports: 3);
+        ports: 3,
+        maxCharge: 60);
     stationList = <Station>[richards, westvillage, curry];
     BitmapDescriptor.fromAssetImage(
-          const ImageConfiguration(), "assets/station_marker_black.png")
+          const ImageConfiguration(), "assets/station_marker_black.png", mipmaps: false)
       .then((icon) {
         setState(() {
           stationMarker = icon;
@@ -117,7 +119,7 @@ class MapScreenState extends State<MapScreen> {
 
   void _updateMapCameraPosition(LatLng target) async {
     final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: target, zoom: 17)));
+    controller.animateCamera(CameraUpdate.newCameraPosition(CameraPosition(target: target, zoom: 16)));
   }
 
   @override
@@ -160,6 +162,9 @@ class MapScreenState extends State<MapScreen> {
               onMapCreated: (GoogleMapController controller) {
                 _controller.complete(controller);
               },
+              zoomGesturesEnabled: false,
+              tiltGesturesEnabled: false,
+              rotateGesturesEnabled: false,
               markers: {
                 Marker(
                   markerId: MarkerId(richards.id.toString()),
@@ -167,7 +172,7 @@ class MapScreenState extends State<MapScreen> {
                   icon: stationMarker,
                   infoWindow: InfoWindow(
                     title: richards.name,
-                    snippet: "Click to connect >",
+                    snippet: "Max Charge: ${richards.maxCharge} min\nClick to connect",
                     onTap: () {
                       Navigator.push(
                         context,
@@ -184,7 +189,7 @@ class MapScreenState extends State<MapScreen> {
                   icon: stationMarker,
                   infoWindow: InfoWindow(
                     title: westvillage.name,
-                    snippet: "Click to connect >",
+                    snippet: "Click to connect",
                     onTap: () {
                       Navigator.push(
                         context,
@@ -201,7 +206,7 @@ class MapScreenState extends State<MapScreen> {
                   icon: stationMarker,
                   infoWindow: InfoWindow(
                     title: curry.name,
-                    snippet: "Click to connect >",
+                    snippet: "Click to connect",
                     onTap: () {
                       Navigator.push(
                         context,
