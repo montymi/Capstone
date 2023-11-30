@@ -104,7 +104,6 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     },
                   ),
                 ),
-                const SizedBox(height: 80),
                 SizedBox(
                   width: 260,
                   child:
@@ -138,7 +137,6 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     sliderRotate: false,
                   ),
                 ),
-                const Expanded(child: SizedBox(height: 40)),
               ],
             ),
           ),
