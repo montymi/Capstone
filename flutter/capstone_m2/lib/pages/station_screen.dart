@@ -93,7 +93,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     ],
                   ),
                 ),
-                const Expanded(child: SizedBox(height: 50)),
+                const SizedBox(height: 30),
                 SizedBox(
                   child: PortDropDownWidget(
                     ports: widget.station.ports,
@@ -104,23 +104,22 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     },
                   ),
                 ),
+                const SizedBox(height: 90),
                 SizedBox(
                   width: 260,
-                  child:
-                    Expanded(
-                      child: TwoDigitInput(
-                        onValueChanged: (value) {
-                          setState(() {
-                            twoDigitInputValue = value;
-                          });
-                        },
-                      ),
-                    ),
+                  child: TwoDigitInput(
+                    onValueChanged: (value) {
+                      setState(() {
+                        twoDigitInputValue = value;
+                      });
+                    },
+                  ),
                 ),
-                const Expanded(child: SizedBox(height: 80)),
+                const Spacer(),
                 SizedBox(
                   width: 320,
                   child: SlideAction(
+                    sliderButtonIconPadding: 8.0,
                     onSubmit: () {
                       if (twoDigitInputValue != null) {
                         mqttCheck(twoDigitInputValue!);
@@ -137,6 +136,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     sliderRotate: false,
                   ),
                 ),
+                const SizedBox(height: 30),
               ],
             ),
           ),
@@ -238,7 +238,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     innerColor: Colors.black87,
                     outerColor: Colors.deepPurple,
                     sliderButtonIcon: const Icon(
-                      Icons.lock_open_outlined,
+                      Icons.cancel_rounded,
                       color: Colors.white,
                     ),
                     text: "Slide to cancel",

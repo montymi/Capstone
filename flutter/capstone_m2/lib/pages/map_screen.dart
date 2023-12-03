@@ -28,9 +28,9 @@ class MapScreenState extends State<MapScreen> {
 
   @override
   void initState() {
+    // _getLocation();
     _initStations();
     super.initState();
-    _getLocation();
   }
 
   void _initStations() {
