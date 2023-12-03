@@ -7,7 +7,7 @@ const char *password = "agent002";
 
 // MQTT Broker
 const char *mqtt_broker = "3.85.78.31";
-const char *topic = "esp32/stations/1/state";
+const char *topic = "esp32/stations/2/state"; // Curry station
 const char *mqtt_username = "capstone";
 const char *mqtt_password = "9973";
 const int mqtt_port = 1883;
