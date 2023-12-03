@@ -124,11 +124,19 @@ void callback(char *topic, byte *payload, unsigned int length) {
       Serial.println("Received message: " + String(message)); 
       refresh = 1;
       }
-    if (String(message) == "clear") { 
+    else if (String(message) == "clear") { 
       Serial.println("\n-----------------------"); 
       Serial.println("Received message: " + String(message));
       sevseg.blank();
       }
+    else if (String(message) == "check") {  // added to handle new logic to avoid refresh running without clear
+      Serial.println("\n-----------------------"); 
+      Serial.println("Received message: " + String(message));
+      String stringMessage = String(tfa);
+      const char *message = stringMessage.c_str(); 
+      client.publish(topic, message); 
+      Serial.printf("tfa: %d\n", tfa);
+    }
 }
 
 void loop() {
