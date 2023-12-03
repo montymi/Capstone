@@ -43,6 +43,7 @@ void setup() {
   bool updateWithDelays = false; // Default 'false' is Recommended
   bool leadingZeros = true; // Use 'true' if you'd like to keep the leading zeros
   bool disableDecPoint = false; // Use 'true' if your decimal point doesn't exist or isn't connected. Then, you only need to specify 7 segmentPins[]
+  bool running = false;
 
   sevseg.begin(hardwareConfig, numDigits, digitPins, segmentPins, resistorsOnSegments,
   updateWithDelays, leadingZeros, disableDecPoint);
@@ -123,19 +124,25 @@ void callback(char *topic, byte *payload, unsigned int length) {
       Serial.println("\n-----------------------"); 
       Serial.println("Received message: " + String(message)); 
       refresh = 1;
+      running = true;
       }
     else if (String(message) == "clear") { 
       Serial.println("\n-----------------------"); 
       Serial.println("Received message: " + String(message));
       sevseg.blank();
+      running = false;
       }
     else if (String(message) == "check") {  // added to handle new logic to avoid refresh running without clear
       Serial.println("\n-----------------------"); 
       Serial.println("Received message: " + String(message));
-      String stringMessage = String(tfa);
-      const char *message = stringMessage.c_str(); 
-      client.publish(topic, message); 
-      Serial.printf("tfa: %d\n", tfa);
+      if (running == true) {
+        const char *message = "running" 
+        client.publish(topic, message); 
+      }
+      else if (running == false) {
+        const char *message = "idle" 
+        client.publish(topic, message); 
+      }
     }
 }
 
