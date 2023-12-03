@@ -26,6 +26,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
   final CountDownController _controller = CountDownController();
   String? chargeTime;
   bool cancelled = false;
+  bool refresh = false;
 
   @override
   void initState() {
@@ -39,7 +40,6 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
   Future<void> _setupMqttClient() async {
     await mqttClientManager.connect();
     mqttClientManager.subscribe(topic2fa);
-    init2fa();
   }
 
   void _setupUpdatesListener() {
@@ -52,6 +52,16 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
           if (parsedPayload != null) {
             setState(() {
               authNum = parsedPayload;
+            });
+          }
+          if (payload == "running") {
+            setState(() {
+              refresh = false; 
+            });
+          }
+          else if (payload == "idle") {
+            setState(() {
+              refresh = false; 
             });
           }
         }
@@ -94,15 +104,28 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                   ),
                 ),
                 const SizedBox(height: 30),
-                SizedBox(
-                  child: PortDropDownWidget(
-                    ports: widget.station.ports,
-                    onPortSelected: (value) {
-                      setState(() {
-                        portNum = value;
-                      });
-                    },
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    PortDropDownWidget(
+                            ports: widget.station.ports,
+                            onPortSelected: (value) {
+                              setState(() {
+                                portNum = value;
+                              });
+                            },
+                          ),
+                    FloatingActionButton.extended(
+                      onPressed: () {
+                        mqttClientManager.publishMessage(topic2fa, "check");
+                        if (refresh == true) {
+                          mqttClientManager.publishMessage(topic2fa, "refresh");
+                        }
+                      },
+                      label: const Text("2FA"),
+                      icon: const Icon(Icons.security),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 90),
                 SizedBox(
@@ -143,7 +166,6 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
         ),
       );
     } else {
-      mqttClientManager.publishMessage(topic2fa, "clear");
       return Scaffold(
         appBar: AppBar(
           title: const Text("M2Solar"),
@@ -230,7 +252,6 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                         setState(() {
                           chargeTime = _controller.getTime()!;
                           cancelled = true;
-                          
                         });
                       }
                       return Future.value(_controller.getTime());
