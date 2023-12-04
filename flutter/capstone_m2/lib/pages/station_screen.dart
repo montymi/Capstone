@@ -61,7 +61,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
           }
           else if (payload == "idle") {
             setState(() {
-              refresh = false; 
+              refresh = true; 
             });
           }
         }
@@ -115,13 +115,16 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                               });
                             },
                           ),
+                    const SizedBox(width: 30.0),
                     FloatingActionButton.extended(
+                      extendedPadding: const EdgeInsets.symmetric(horizontal: 10.0),
                       onPressed: () {
                         mqttClientManager.publishMessage(topic2fa, "check");
                         if (refresh == true) {
                           mqttClientManager.publishMessage(topic2fa, "refresh");
                         }
                       },
+                      backgroundColor: Colors.deepPurple,
                       label: const Text("2FA"),
                       icon: const Icon(Icons.security),
                     ),
