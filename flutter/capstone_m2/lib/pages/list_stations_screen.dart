@@ -16,6 +16,7 @@ class StationsList extends StatelessWidget {
         backgroundColor: Colors.black87,
       ),
       body: ListView.builder(
+          padding: const EdgeInsetsDirectional.only(top: 8.0),
           itemCount: listOfStations.length,
           itemBuilder: (BuildContext context, int index) {
             return GestureDetector(

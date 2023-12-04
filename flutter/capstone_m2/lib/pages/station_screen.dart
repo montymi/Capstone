@@ -87,6 +87,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
+                const SizedBox(height: 10),
                 SizedBox(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
