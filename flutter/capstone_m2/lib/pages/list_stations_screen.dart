@@ -30,8 +30,8 @@ class StationsList extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(6.0),
                 child: Card(
-                  color: Colors.black87,
-                  shadowColor: Colors.black,
+                  color: Colors.deepPurple,
+                  shadowColor: Colors.black87,
                   elevation: 4,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16.0),

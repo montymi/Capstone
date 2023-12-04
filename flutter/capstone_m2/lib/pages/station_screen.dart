@@ -92,9 +92,9 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(
-                        'assets/station_marker_black.png', // Replace with your actual image path
-                        height: 40, // Adjust the height as needed
-                        width: 40,
+                        'assets/station_marker_black.png', 
+                        height: 50,  
+                        width: 50,
                       ),
                       Title(
                         color: Colors.black, 
@@ -125,7 +125,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                         }
                       },
                       backgroundColor: Colors.deepPurple,
-                      label: const Text("2FA"),
+                      label: const Text("Get Code"),
                       icon: const Icon(Icons.security),
                     ),
                   ],
@@ -152,10 +152,10 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                       }
                       return Future.value(bool);
                     },
-                    innerColor: Colors.black87,
+                    innerColor: Colors.black,
                     outerColor: Colors.deepPurple,
                     sliderButtonIcon: const Icon(
-                      Icons.lock_open_outlined,
+                      Icons.lock_open_rounded,
                       color: Colors.white,
                     ),
                     text: "Slide to charge",
@@ -186,8 +186,8 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(
-                        'assets/station_marker_black.png', // Replace with your actual image path
-                        height: 50, // Adjust the height as needed
+                        'assets/station_marker_black.png', 
+                        height: 50,  
                         width: 50,
                       ),
                       Title(
@@ -243,6 +243,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     }
                   },
                 ),
+                const Spacer(),
                 SizedBox(
                   width: 350,
                   child: cancelled
@@ -259,7 +260,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                       }
                       return Future.value(_controller.getTime());
                     },
-                    innerColor: Colors.black87,
+                    innerColor: Colors.black,
                     outerColor: Colors.deepPurple,
                     sliderButtonIcon: const Icon(
                       Icons.cancel_rounded,
@@ -278,6 +279,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                   ),
                 ),
                 if (chargeTime != null) Text('Total Charging Time: $chargeTime', style: const TextStyle(fontSize: 21.0, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 30),
               ]
             )
           )

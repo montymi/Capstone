@@ -81,7 +81,7 @@ class MapScreenState extends State<MapScreen> {
         coords ??= await location.getLocation();
         _updateMapCameraPosition(LatLng(coords.latitude!, coords.longitude!));
       } catch (e) {
-        print("Error getting user location: $e");
+        debugPrint("Error getting user location: $e");
       }
     }
     setState(() {
@@ -189,7 +189,7 @@ class MapScreenState extends State<MapScreen> {
                   icon: stationMarker,
                   infoWindow: InfoWindow(
                     title: westvillage.name,
-                    snippet: "Click to connect",
+                    snippet: "Max Charge: ${richards.maxCharge} min\nClick to connect",
                     onTap: () {
                       Navigator.push(
                         context,
@@ -206,7 +206,7 @@ class MapScreenState extends State<MapScreen> {
                   icon: stationMarker,
                   infoWindow: InfoWindow(
                     title: curry.name,
-                    snippet: "Click to connect",
+                    snippet: "Max Charge: ${richards.maxCharge} min\nClick to connect",
                     onTap: () {
                       Navigator.push(
                         context,
