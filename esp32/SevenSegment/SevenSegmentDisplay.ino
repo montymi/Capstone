@@ -36,8 +36,15 @@ void setup() {
 
   // Configure Seven Segment Display
   byte numDigits = 2;
-  byte digitPins[] = {17, 15};
-  byte segmentPins[] = {4, 5, 18, 21, 19, 2, 16};  //A-4,B-5,C-18,D-21,E-9,F-2,G-16  (letter-pin)
+
+  //use these pins if using the esp32 mini
+  byte digitPins[] = {5, 16};
+  byte segmentPins[] = {21, 23, 19, 26, 18, 17, 22}; //A-21,B-23,C-19,D-26,E-18,F-17,G-22  (letter-pin)
+
+  //use these pins if using the esp-wroom-32u (38-pin)
+  //byte digitPins[] = {17, 15};
+  //byte segmentPins[] = {4, 5, 18, 21, 19, 2, 16};  //A-4,B-5,C-18,D-21,E-9,F-2,G-16  (letter-pin)
+  
   bool resistorsOnSegments = false; // 'false' means resistors are on digit pins
   byte hardwareConfig = COMMON_CATHODE; // See README.md for options
   bool updateWithDelays = false; // Default 'false' is Recommended
