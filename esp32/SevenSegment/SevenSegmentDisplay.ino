@@ -20,6 +20,7 @@ PubSubClient client(espClient);
 
 int tfa;
 int refresh;
+bool running;
 
 void setup() {
   // Serial baud to 115200;
@@ -143,11 +144,11 @@ void callback(char *topic, byte *payload, unsigned int length) {
       Serial.println("\n-----------------------"); 
       Serial.println("Received message: " + String(message));
       if (running == true) {
-        const char *message = "running" 
+        const char *message = "running"; 
         client.publish(topic, message); 
       }
       else if (running == false) {
-        const char *message = "idle" 
+        const char *message = "idle";
         client.publish(topic, message); 
       }
     }

@@ -18,6 +18,11 @@ const int ledPin4 = 4;  // Switch 2 of Leg A
 const int ledPin16 = 16;  // Switch 1 of Leg B
 const int ledPin17 = 17;  // Switch 2 of Leg B
 
+// EXTRA LED pins
+const int led2 = 26;
+const int led3 = 27;
+const int led4 = 14;
+
 // setting PWM properties
 const double freqCar = 44000; //PWM frequency (MATCHES SINE WAVE)
 const double freqMod = 60;  //Modulation signal frequency
@@ -29,7 +34,7 @@ const int resolution = 8;
 const int sample = freqCar/freqMod;
 int duty;
 int loop_counter = 0;
-bool charge_state = 1;
+bool charge_state = 0;
 float avg_peak = 0;
 
 WiFiClient espClient;
@@ -125,8 +130,14 @@ void callback(char *topic, byte *payload, unsigned int length) {
         message[i] = (char)payload[i];
     }
     message[length] = '\0';  // Null-terminate the string
-    if (String(message) == "off") { Serial.println("\n-----------------------"); Serial.println("Received message: " + String(message)); charge_state = 0; }
-    if (String(message) == "on") { Serial.println("\n-----------------------"); Serial.println("Received message: " + String(message)); charge_state = 1; }
+    if (String(message) == "1:off") { Serial.println("\n-----------------------"); Serial.println("Received message: " + String(message)); charge_state = 0; }
+    else if (String(message) == "1:on") { Serial.println("\n-----------------------"); Serial.println("Received message: " + String(message)); charge_state = 1; }
+    else if (String(message) == "2:off") { Serial.println("\n-----------------------"); Serial.println("Received message: " + String(message)); digitalWrite(led2, LOW);}
+    else if (String(message) == "2:on") { Serial.println("\n-----------------------"); Serial.println("Received message: " + String(message)); digitalWrite(led2, HIGH);}
+    else if (String(message) == "3:off") { Serial.println("\n-----------------------"); Serial.println("Received message: " + String(message)); digitalWrite(led3, LOW); }
+    else if (String(message) == "3:on") { Serial.println("\n-----------------------"); Serial.println("Received message: " + String(message)); digitalWrite(led3, HIGH);}
+    else if (String(message) == "4:off") { Serial.println("\n-----------------------"); Serial.println("Received message: " + String(message)); digitalWrite(led4, LOW);}
+    else if (String(message) == "4:on") { Serial.println("\n-----------------------"); Serial.println("Received message: " + String(message)); digitalWrite(led4, HIGH); }
 }
 
 void loop() {
