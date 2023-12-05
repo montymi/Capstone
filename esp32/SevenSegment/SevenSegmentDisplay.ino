@@ -10,7 +10,7 @@ const char *password = "agent002";
 
 // MQTT Broker
 const char *mqtt_broker = "3.85.78.31";
-const char *topic = "esp32/station/2/auth"; // Curry Station
+const char *topic = "esp32/stations/1/auth"; // Curry Station
 const char *mqtt_username = "capstone";
 const char *mqtt_password = "9973";
 const int mqtt_port = 1883;
@@ -140,7 +140,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
       sevseg.blank();
       running = false;
       }
-    else if (String(message) == "check") {  // added to handle new logic to avoid refresh running without clear
+    /*else if (String(message) == "check") {  // added to handle new logic to avoid refresh running without clear
       Serial.println("\n-----------------------"); 
       Serial.println("Received message: " + String(message));
       if (running == true) {
@@ -151,7 +151,7 @@ void callback(char *topic, byte *payload, unsigned int length) {
         const char *message = "idle";
         client.publish(topic, message); 
       }
-    }
+    }*/
 }
 
 void loop() {
