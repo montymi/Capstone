@@ -17,8 +17,7 @@ class StationScreen extends StatefulWidget {
 class StationScreenState extends State<StationScreen> with TickerProviderStateMixin {
   MQTTClientManager mqttClientManager = MQTTClientManager();
   late String topic2fa;
-  String? topic2faPort;
-  String? topicChargeState;
+  late String topicChargeState;
   int? authNum = 11;
   int? twoDigitInputValue; // Store the value entered by the user
   int? portNum = 1; // Variable to store the selected dropdown value
@@ -32,17 +31,10 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
   @override
   void initState() {
     topic2fa = 'esp32/stations/${widget.station.id}/auth';
-    updateTopic();
+    topicChargeState = 'esp32/stations/${widget.station.id}/state';
     _setupMqttClient();
     _setupUpdatesListener();
     super.initState();
-  }
-
-  void updateTopic() {
-    setState(() {
-      topic2faPort = 'esp32/stations/${widget.station.id}/auth/ports/$portNum';
-      topicChargeState = 'esp32/stations/${widget.station.id}/state/ports/$portNum';
-        });
   }
 
   Future<void> _setupMqttClient() async {
@@ -78,7 +70,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
   }
 
   void init2fa() {
-    mqttClientManager.publishMessage(topic2faPort!, "refresh");
+    mqttClientManager.publishMessage(topic2fa, "$portNum:refresh");
   }
 
   @override
@@ -121,7 +113,6 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                             onPortSelected: (value) {
                               setState(() {
                                 portNum = value;
-                                updateTopic();
                               });
                             },
                           ),
@@ -129,9 +120,9 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     FloatingActionButton.extended(
                       extendedPadding: const EdgeInsets.symmetric(horizontal: 10.0),
                       onPressed: () {
-                        mqttClientManager.publishMessage(topic2faPort!, "check");
+                        mqttClientManager.publishMessage(topic2fa, "$portNum:check");
                         if (refresh == true) {
-                          mqttClientManager.publishMessage(topic2faPort!, "refresh");
+                          mqttClientManager.publishMessage(topic2fa, "$portNum:refresh");
                         }
                       },
                       backgroundColor: Colors.deepPurple,
@@ -235,11 +226,11 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                   isTimerTextShown: true,
                   autoStart: true,
                   onStart: () {
-                    mqttClientManager.publishMessage(topicChargeState!, "on");
+                    mqttClientManager.publishMessage(topicChargeState, "$portNum:on");
                     debugPrint('Countdown Started');
                   },
                   onComplete: () {
-                    mqttClientManager.publishMessage(topicChargeState!, "off");
+                    mqttClientManager.publishMessage(topicChargeState, "$portNum:off");
                     debugPrint('Countdown Ended');
                   },
                   onChange: (String timeStamp) {
@@ -261,7 +252,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     : SlideAction(
                     onSubmit: () {
                       _controller.pause();
-                      mqttClientManager.publishMessage(topicChargeState!, "off");
+                      mqttClientManager.publishMessage(topicChargeState, "$portNum:off");
                       if (_controller.getTime() != null) {
                         setState(() {
                           chargeTime = _controller.getTime()!;
@@ -316,8 +307,8 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
   
   @override
   void dispose() {
-    mqttClientManager.publishMessage(topicChargeState!, "off");
-    mqttClientManager.publishMessage(topic2faPort!, "clear");
+    mqttClientManager.publishMessage(topicChargeState, "$portNum:off");
+    mqttClientManager.publishMessage(topic2fa, "$portNum:clear");
     Future.delayed(const Duration(seconds: 1)); //recommend
     mqttClientManager.disconnect();
     super.dispose();
