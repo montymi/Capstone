@@ -70,7 +70,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
   }
 
   void init2fa() {
-    mqttClientManager.publishMessage(topic2fa, "$portNum:refresh");
+    mqttClientManager.publishMessage(topic2fa, "refresh");
   }
 
   @override
@@ -120,9 +120,9 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     FloatingActionButton.extended(
                       extendedPadding: const EdgeInsets.symmetric(horizontal: 10.0),
                       onPressed: () {
-                        mqttClientManager.publishMessage(topic2fa, "$portNum:check");
+                        mqttClientManager.publishMessage(topic2fa, "check");
                         if (refresh == true) {
-                          mqttClientManager.publishMessage(topic2fa, "$portNum:refresh");
+                          mqttClientManager.publishMessage(topic2fa, "refresh");
                         }
                       },
                       backgroundColor: Colors.deepPurple,
@@ -308,7 +308,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
   @override
   void dispose() {
     mqttClientManager.publishMessage(topicChargeState, "$portNum:off");
-    mqttClientManager.publishMessage(topic2fa, "$portNum:clear");
+    mqttClientManager.publishMessage(topic2fa, "clear");
     Future.delayed(const Duration(seconds: 1)); //recommend
     mqttClientManager.disconnect();
     super.dispose();
