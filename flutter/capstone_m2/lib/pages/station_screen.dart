@@ -54,16 +54,6 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
               authNum = parsedPayload;
             });
           }
-          if (payload == "running") {
-            setState(() {
-              refresh = false; 
-            });
-          }
-          else if (payload == "idle") {
-            setState(() {
-              refresh = true; 
-            });
-          }
         }
       }
     });
@@ -120,10 +110,9 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
                     FloatingActionButton.extended(
                       extendedPadding: const EdgeInsets.symmetric(horizontal: 10.0),
                       onPressed: () {
-                        mqttClientManager.publishMessage(topic2fa, "check");
-                        if (refresh == true) {
-                          mqttClientManager.publishMessage(topic2fa, "refresh");
-                        }
+                        mqttClientManager.publishMessage(topic2fa, "clear");
+                        Future.delayed(const Duration(seconds: 1)); //recommend
+                        mqttClientManager.publishMessage(topic2fa, "refresh");
                       },
                       backgroundColor: Colors.deepPurple,
                       label: const Text("Get Code"),
@@ -170,6 +159,7 @@ class StationScreenState extends State<StationScreen> with TickerProviderStateMi
         ),
       );
     } else {
+      mqttClientManager.publishMessage(topic2fa, "clear");
       return Scaffold(
         appBar: AppBar(
           title: const Text("M2Solar"),
