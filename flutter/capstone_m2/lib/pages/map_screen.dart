@@ -34,12 +34,12 @@ class MapScreenState extends State<MapScreen> {
   }
 
   void _initStations() {
-    richards = const Station(
+    curry = const Station(
         id: 1,
-        name: 'Richards Station',
-        latitude: 42.3404,
-        longitude: -71.0888,
-        ports: 2,
+        name: 'Curry Center',
+        latitude: 42.339172,
+        longitude: -71.088044,
+        ports: 3,
         maxCharge: 60);
     westvillage = const Station(
         id: 2,
@@ -48,12 +48,12 @@ class MapScreenState extends State<MapScreen> {
         longitude: -71.092649,
         ports: 3,
         maxCharge: 60);
-    curry = const Station(
+    richards = const Station(
         id: 3,
-        name: 'Curry Center',
-        latitude: 42.339172,
-        longitude: -71.088044,
-        ports: 3,
+        name: 'Richards Station',
+        latitude: 42.3404,
+        longitude: -71.0888,
+        ports: 2,
         maxCharge: 60);
     stationList = <Station>[richards, westvillage, curry];
     BitmapDescriptor.fromAssetImage(
